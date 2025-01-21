@@ -1,6 +1,8 @@
 import express from 'express'
 import cors from 'cors'
 import mongoose, {Schema, model} from 'mongoose'
+import dotenv from 'dotenv'
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -9,7 +11,7 @@ app.use(cors());
 
 const connectDb = async() => {
     try {
-        await mongoose.connect('mongodb+srv://tirtharajbarma:tirtharaj3@cluster0.nf0kx.mongodb.net/store?retryWrites=true&w=majority&appName=Cluster0')
+        await mongoose.connect(process.env.MONGO_URI)
         console.log('Connected successfully to mongodb');
 
     } catch (error) {
@@ -26,6 +28,8 @@ const questionSchema = new Schema({
     blocks: {type: Array},
 }, {timestamps: true})
 
+// IMP -> indexing : text -> index
+questionSchema.index({title : 'text'});
 const Question = model('Question', questionSchema);
 
 app.get('/api/search', async(req, res) => {
@@ -37,16 +41,24 @@ app.get('/api/search', async(req, res) => {
     }
 
     try {
-        console.log('Received query:', query);
+        console.log('received query:', query);
         const sanitizeQuery = query.trim();
 
-        const result = await Question.find({title: new RegExp(sanitizeQuery, 'i')});
+        // $search -> operator in text index
+        const result = await Question.find({
+            $text: {$search: sanitizeQuery}
+        });
         res.json(result);
 
     } catch (error) {
         res.status(500).json({error: 'database error'})
     }
 
+})
+
+app.get('/all-questions', async(req, res) => {
+    const result = await Question.find();
+    res.json(result);
 })
 
 app.get('/', (req, res) => {
