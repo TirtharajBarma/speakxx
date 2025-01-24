@@ -34,7 +34,7 @@ const Question = model('Question', questionSchema);
 
 app.get('/api/search', async(req, res) => {
     // GET http://localhost:5000/api/search?query=JavaScript
-    const {query} = req.query;
+    const {query,  page = 1, limit = 10} = req.query;
 
     if(!query){
         return res.status(400).json({error: 'Search input is needed'});
@@ -43,12 +43,24 @@ app.get('/api/search', async(req, res) => {
     try {
         console.log('received query:', query);
         const sanitizeQuery = query.trim();
+        const skip = (page - 1) * limit;
 
-        // $search -> operator in text index
-        const result = await Question.find({
+        const results = await Question.find({
             $text: {$search: sanitizeQuery}
+        })
+        .skip(skip)
+        .limit(parseInt(limit))
+
+        const totalResults = await Question.countDocuments({
+            $text: { $search: sanitizeQuery },
         });
-        res.json(result);
+
+        res.json({
+            results,
+            totalResults,
+            totalPages: Math.ceil(totalResults / limit),
+            currentPage: parseInt(page),
+        });
 
     } catch (error) {
         res.status(500).json({error: 'database error'})

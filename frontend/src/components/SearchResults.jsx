@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 
-const SearchResults = ({ results, startIndex, endIndex }) => {
+const SearchResults = ({ results, page, limit }) => {
 
   const [visibleSolutions, setVisibleSolutions] = useState({});
 
@@ -36,9 +36,9 @@ const SearchResults = ({ results, startIndex, endIndex }) => {
             </tr>
           </thead>
           <tbody>
-            {results.slice(startIndex, endIndex).map((item, index) => (
+            {results.map((item, index) => (
               <tr key={item._id}>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{startIndex + index + 1}</td>
+                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{index + 1 + (page - 1) * limit}</td>
                 <td style={{ border: '1px solid #ddd', padding: '8px' }}>
                   {item.title}
                   {item.type === 'MCQ' && item.options && (

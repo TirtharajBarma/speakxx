@@ -1,61 +1,79 @@
-import React, {useState, useEffect} from 'react';
-import {SearchInput, SearchResults, PaginationComponent} from './components/index'
-import axios from 'axios'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { SearchInput, SearchResults, PaginationComponent } from './components';
+import './App.css'
 
 function App() {
+  const [query, setQuery] = useState(''); 
+  const [results, setResults] = useState([]); 
+  const [loading, setLoading] = useState(false); 
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1); // Current page
+  const [totalPages, setTotalPages] = useState(0);      // total page -> per page
 
-  const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [questionPerPage, setQuestionPerPage] = useState(10);
 
-  const handleSearch = async () => {
-    if (!query) return;
-    setLoading(true);
-    setCurrentPage(1);
+  const fetchResults = async(newPage = 1) => {
+      if (!query.trim()) return; 
+      setLoading(true);
+      setError(null);
 
-    try {
-      const res = await axios.get('http://localhost:5001/api/search', {
-        params: { query },
-      });
-      setResults(res.data);
-    } catch (error) {
-      console.error('Error fetching search results', error);
-      setResults([]);
-    } 
-    finally {
-      setLoading(false);
-    }
+      try {
+        const response = await axios.get('http://localhost:5001/api/search', {
+          params: { query, page: 1, limit: 10 }
+        });
+    
+        setResults(response.data.results);
+        setTotalPages(response.data.totalPages);
+        setPage(newPage);
+  
+      } catch (err) {
+        console.error('Error fetching search results:', err);
+        setError('something went wrong');
+      } finally {
+        setLoading(false);
+      }
+  }
+
+  // fetch the 1st page of the new query
+  const handleSearch = async() => {
+      fetchResults(1);
   };
 
-  const startIndex = (currentPage - 1) * questionPerPage;
-  const endIndex = startIndex + questionPerPage;
-
-  const handlePageChange = (event, page) => {
-    setCurrentPage(page);
-  };
+  const handlePageChange = async(newPage) => {
+      fetchResults(newPage);
+};
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto', border: '1px solid gray' }}>
-    <h1>Search Questions</h1>
-    <p>Total Questions: {results.length}</p>
+    <div className='container'>
+      <h1 style={{textAlign: 'center'}}>Search App</h1>
 
-    <SearchInput query={query} setQuery={setQuery} handleSearch={handleSearch} setQuestionPerPage={setQuestionPerPage}/>
+      <SearchInput
+        query={query}
+        setQuery={setQuery}
+        handleSearch={handleSearch}
+      />
 
-    {loading ? (
-      <p>Loading...</p>
-    ) : (
-      <SearchResults results={results} startIndex={startIndex} endIndex={endIndex} />
-    )}
+      {loading && (
+        <div className="spinner">
+          <div></div>
+        </div>
+      )}
 
-    <PaginationComponent
-      count={Math.ceil(results.length / questionPerPage)}
-      currentPage={currentPage}
-      handlePageChange={handlePageChange}
-    />
-  </div>
-  )
+      {!loading && results.length > 0 && (
+          <div>
+            <SearchResults results={results} page={page} limit={10} />
+              <PaginationComponent
+                  currentPage={page}
+                  totalPages={totalPages}
+                  handlePageChange={handlePageChange}
+              />
+          </div>
+      )}
+
+      {!loading && results.length === 0 && <p>No results found</p>}
+
+    </div>
+  );
 }
 
-export default App
+export default App;

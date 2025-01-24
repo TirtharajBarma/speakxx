@@ -1,6 +1,11 @@
 import React from 'react';
 
-const SearchInput = ({ query, setQuery, handleSearch, setQuestionPerPage }) => {
+const SearchInput = ({ query, setQuery, handleSearch}) => {
+
+  const handleKeyDown = (e) => {
+    if(e.key === 'Enter') handleSearch();
+  }
+
   return (
     <div style={{ marginBottom: '20px' }}>
       <input
@@ -8,6 +13,7 @@ const SearchInput = ({ query, setQuery, handleSearch, setQuestionPerPage }) => {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search for your questions"
+        onKeyDown={handleKeyDown}
         style={{ width: '58%', padding: '10px', fontSize: '16px' }}
       />
       <button
@@ -17,15 +23,6 @@ const SearchInput = ({ query, setQuery, handleSearch, setQuestionPerPage }) => {
       >
         Search
       </button>
-      <select
-        onChange={(e) => setQuestionPerPage(Number(e.target.value))}
-        style={{ marginLeft: '10px', padding: '10px', fontSize: '16px' }}
-      >
-        <option value={10}>10 questions</option>
-        <option value={15}>15 questions</option>
-        <option value={20}>20 questions</option>
-        <option value={25}>25 questions</option>
-    </select>
     </div>
   );
 };
