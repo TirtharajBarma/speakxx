@@ -10,6 +10,7 @@ function App() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1); // Current page
   const [totalPages, setTotalPages] = useState(0);      // total page -> per page
+  const [type, setType] = useState('all');
 
 
   const fetchResults = async(newPage = 1) => {
@@ -19,7 +20,7 @@ function App() {
 
       try {
         const response = await axios.get('http://localhost:5001/api/search', {
-          params: { query, page: 1, limit: 10 }
+          params: { query, page: 1, limit: 10, type }
         });
     
         setResults(response.data.results);
@@ -51,6 +52,8 @@ function App() {
         query={query}
         setQuery={setQuery}
         handleSearch={handleSearch}
+        type={type}
+        setType={setType}
       />
 
       {loading && (

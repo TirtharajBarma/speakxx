@@ -29,12 +29,12 @@ const questionSchema = new Schema({
 }, {timestamps: true})
 
 // IMP -> indexing : text -> index
-questionSchema.index({title : 'text'});
+questionSchema.index({title : 'text', type: 1});
 const Question = model('Question', questionSchema);
 
 app.get('/api/search', async(req, res) => {
-    // GET http://localhost:5000/api/search?query=JavaScript
-    const {query,  page = 1, limit = 10} = req.query;
+    // GET http://localhost:5000/api/search?query=rearrange&type=mcq&page=1&limit=10
+    const {query,  page = 1, limit = 10, type} = req.query;
 
     if(!query){
         return res.status(400).json({error: 'Search input is needed'});
@@ -45,15 +45,19 @@ app.get('/api/search', async(req, res) => {
         const sanitizeQuery = query.trim();
         const skip = (page - 1) * limit;
 
-        const results = await Question.find({
+        const filter = {
             $text: {$search: sanitizeQuery}
-        })
+        }
+
+        if(type && type !== 'all'){
+            filter.type = type;
+        }
+
+        const results = await Question.find(filter)
         .skip(skip)
         .limit(parseInt(limit))
 
-        const totalResults = await Question.countDocuments({
-            $text: { $search: sanitizeQuery },
-        });
+        const totalResults = await Question.countDocuments(filter);
 
         res.json({
             results,
