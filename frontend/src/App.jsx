@@ -7,7 +7,6 @@ function App() {
   const [query, setQuery] = useState(''); 
   const [results, setResults] = useState([]); 
   const [loading, setLoading] = useState(false); 
-  const [error, setError] = useState(null);
   const [page, setPage] = useState(1); // Current page
   const [totalPages, setTotalPages] = useState(0);      // total page -> per page
   const [type, setType] = useState('all');
