@@ -15,7 +15,6 @@ function App() {
   const fetchResults = async(newPage = 1) => {
       if (!query.trim()) return; 
       setLoading(true);
-      setError(null);
 
       try {
         const response = await axios.get('http://localhost:5001/api/search', {
@@ -28,7 +27,6 @@ function App() {
   
       } catch (err) {
         console.error('Error fetching search results:', err);
-        setError('something went wrong');
       } finally {
         setLoading(false);
       }
