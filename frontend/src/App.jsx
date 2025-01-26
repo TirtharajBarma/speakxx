@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { SearchInput, SearchResults, PaginationComponent } from './components';
+import config from './config/config';
 import './App.css'
 
 function App() {
@@ -17,7 +18,7 @@ function App() {
       setLoading(true);
 
       try {
-        const response = await axios.get('http://localhost:5001/api/search', {
+        const response = await axios.get(`${config.apiUrl}/api/search`, {
           params: { query, page: 1, limit: 10, type }
         });
     
